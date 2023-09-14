@@ -31,7 +31,7 @@ spec:
     spec:
       containers:
         - name: "react-ui"
-          image: "emman777/e-comerce:ui"
+          image: "emman777/e-commerce:ui"
           imagePullPolicy: "IfNotPresent"
           ports:
             - containerPort: 8080
