@@ -1,0 +1,74 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: cart-ui
+  name: cart
+spec:
+  ports:
+  - name: http
+    port: 1004
+    targetPort: 1004
+  selector:
+    app: cart-ui
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cart-ui
+  labels:
+    app: cart-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cart-ui
+  template:
+    metadata:
+      labels:
+        app: cart-ui
+    spec:
+      containers:
+        - name: cart-ui
+          image: mahendravarman12/e-commerce:cart
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 1004
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 1004
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 1004
+            initialDelaySeconds: 10
+            periodSeconds: 15
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: cart-ui-autoscaler
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: cart-ui
+  minReplicas: 1
+  maxReplicas: 5  
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50  
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: AverageValue
+        averageValue: 100Mi
